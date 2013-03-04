@@ -11,10 +11,10 @@ public abstract class Stream {
 		Current
 	}
 	
-	private ExecutorService m_ReadExecutor;
+	private static ExecutorService m_OperationExecutor;
 	
-	public Stream() {
-		m_ReadExecutor = Executors.newCachedThreadPool();
+	static {
+		m_OperationExecutor = Executors.newCachedThreadPool();
 	}
 	
 	public int read() throws IOException, UnsupportedOperationException {
@@ -87,17 +87,19 @@ public abstract class Stream {
 		}
 	}
 	
-	public void beginRead(byte[] buffer, int offset, int count, IAsyncReadReceiver receiver, Object state) throws UnsupportedOperationException {
+	public IAsyncStreamOperationResult beginRead(byte[] buffer, int offset, int count, IAsyncReadReceiver receiver, Object state) throws UnsupportedOperationException {
 		if (this.canRead()) {
 			StreamReadOperation readOp = new StreamReadOperation(buffer, offset, count, this, receiver, state);
 					
-			m_ReadExecutor.submit(readOp);
+			m_OperationExecutor.submit(readOp);
+			
+			return readOp;
 		} else {
 			throw new UnsupportedOperationException();
 		}
 	}
 	
-	public int endRead(IStreamOperationResult result) throws InvalidAsyncStreamOperationResult, WrongStreamException, IOException {
+	public int endRead(IAsyncStreamOperationResult result) throws InvalidAsyncStreamOperationResult, WrongStreamException, IOException, InterruptedException {
 		
 		if (this == result.getStream()) {
 			
@@ -105,10 +107,33 @@ public abstract class Stream {
 			
 			if (op != null) {
 				
+				return op.read();				
+			} else {
+				throw new InvalidAsyncStreamOperationResult("This provided IStreamOperationResult is invalid");
+			}
+		} else {
+			throw new WrongStreamException("Operation result not for this stream");
+		}
+	}
+	
+	public IAsyncStreamOperationResult beginWrite(byte[] buffer, int offset, int count, IAsyncWriteReceiver receiver, Object state) throws UnsupportedOperationException, IOException {
+		StreamWriteOperation writeOp = new StreamWriteOperation(buffer, offset, count, this, receiver, state);
+
+		m_OperationExecutor.submit(writeOp);
+		
+		return writeOp;
+	}
+	
+	public void endWrite(IAsyncStreamOperationResult result) throws UnsupportedOperationException, IOException, InvalidAsyncStreamOperationResult, WrongStreamException {
+		if (this == result.getStream()) {
+			
+			StreamWriteOperation op = StreamWriteOperation.class.cast(result);
+			
+			if (op != null) {
+				
 				op.stop();
-				
-				return op.read();
-				
+
+				op.write();				
 			} else {
 				throw new InvalidAsyncStreamOperationResult("This provided IStreamOperationResult is invalid");
 			}

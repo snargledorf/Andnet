@@ -3,26 +3,30 @@ package com.theeste.andnet.IO;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-class StreamReadOperation extends StreamOperationResult {
+import com.theeste.andnet.Threading.ManualResetEvent;
+
+class StreamReadOperation extends StreamOperationResult implements Runnable {
 	
 	private ByteBuffer m_ByteBuffer;	
 	private IAsyncReadReceiver m_Receiver;
-	private Stream m_Stream;
-	private Thread m_RunningThread;
-	private boolean m_ShouldStop = false;
 	private int m_FirstByte;
+	private ManualResetEvent m_ReadCompleteEvent = new ManualResetEvent(false);
 		
 	StreamReadOperation(byte[] buffer, int offset, int count, Stream stream, IAsyncReadReceiver receiver, Object state) {
 		super(stream, state);
 		
 		m_ByteBuffer = ByteBuffer.wrap(buffer, offset, count);
 		m_Receiver = receiver;
-		m_Stream = stream;
 	}
 	
-	int read() throws IOException {
+	int read() throws IOException, InterruptedException {
 		
 		int totalBytesRead = -1;
+		
+		m_ReadCompleteEvent.reset();
+		m_ReadCompleteEvent.waitOne();
+		
+		this.stop();
 		
 		if (this.m_FirstByte != -1) {
 			
@@ -64,43 +68,23 @@ class StreamReadOperation extends StreamOperationResult {
 			
 		return totalBytesRead;
 	}
-	
-	private synchronized void setRunningThread(Thread thread) {
-		m_RunningThread = thread;
-	}
-	
-	@Override
-	public synchronized void stop() {
-		
-		m_ShouldStop = true;
-		
-		if (m_RunningThread != null) {
-			Thread temp = m_RunningThread;
-			m_RunningThread = null;
-			temp.interrupt();
-		}
-	}
-	
-	@Override
-	public synchronized boolean isMarkedToStop() {
-		return m_ShouldStop;
-	}
 
 	@Override
 	public void run() {
-		
-		this.setRunningThread(Thread.currentThread());
 		
 		try {
 			
 			if (this.isMarkedToStop() == false && Thread.currentThread().isInterrupted() == false) {
 				
-				m_FirstByte = m_Stream.read();
+				m_FirstByte = this.getStream().read();
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-			
-		m_Receiver.endRead(this);
+		
+		m_ReadCompleteEvent.set();
+		
+		if (this.isMarkedToStop() == false && m_Receiver != null)
+			m_Receiver.endRead(this);
 	}
 }
