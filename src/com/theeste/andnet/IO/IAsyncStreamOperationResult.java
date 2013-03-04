@@ -1,6 +1,6 @@
 package com.theeste.andnet.IO;
 
-public interface IStreamOperationResult {
+public interface IAsyncStreamOperationResult {
 	Object getState();
 	Stream getStream();	
 }
