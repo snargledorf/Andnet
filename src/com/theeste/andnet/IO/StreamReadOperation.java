@@ -23,7 +23,6 @@ class StreamReadOperation extends StreamOperationResult implements Runnable {
 		
 		int totalBytesRead = -1;
 		
-		m_ReadCompleteEvent.reset();
 		m_ReadCompleteEvent.waitOne();
 		
 		this.stop();
