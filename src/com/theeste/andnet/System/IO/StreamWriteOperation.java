@@ -1,8 +1,8 @@
-package com.theeste.andnet.IO;
+package com.theeste.andnet.System.IO;
 
 import java.io.IOException;
 
-class StreamWriteOperation extends StreamOperationResult implements Runnable{
+class StreamWriteOperation extends StreamOperationAsyncResult implements Runnable{
 	
 	private IAsyncWriteReceiver m_Receiver;
 	private byte[] m_BufferToWrite;
@@ -26,6 +26,6 @@ class StreamWriteOperation extends StreamOperationResult implements Runnable{
 	}
 	
 	void write() throws UnsupportedOperationException, IOException {
-		this.getStream().write(m_BufferToWrite, m_Offset, m_Count);
+		this.stream().write(m_BufferToWrite, m_Offset, m_Count);
 	}
 }

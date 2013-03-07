@@ -1,11 +1,11 @@
-package com.theeste.andnet.IO;
+package com.theeste.andnet.System.IO;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import com.theeste.andnet.Threading.ManualResetEvent;
+import com.theeste.andnet.System.Threading.ManualResetEvent;
 
-class StreamReadOperation extends StreamOperationResult implements Runnable {
+class StreamReadOperation extends StreamOperationAsyncResult {
 	
 	private ByteBuffer m_ByteBuffer;	
 	private IAsyncReadReceiver m_Receiver;
@@ -32,7 +32,7 @@ class StreamReadOperation extends StreamOperationResult implements Runnable {
 			m_ByteBuffer.put((byte)m_FirstByte);
 			totalBytesRead = 1;
 			
-			if (this.getStream().available() > 0) {
+			if (this.stream().available() > 0) {
 			
 				int limit = m_ByteBuffer.limit();
 				
@@ -42,7 +42,7 @@ class StreamReadOperation extends StreamOperationResult implements Runnable {
 					
 					byte[] buffer = new byte[bytesLeft];
 					
-					int byteCount = this.getStream().read(buffer, 0, buffer.length);
+					int byteCount = this.stream().read(buffer, 0, buffer.length);
 						
 					if (byteCount > 0) {
 						
@@ -54,7 +54,7 @@ class StreamReadOperation extends StreamOperationResult implements Runnable {
 						break;
 					}
 					
-					if (this.getStream().available() <= 0)
+					if (this.stream().available() <= 0)
 						break;
 					
 					bytesLeft = limit - byteCount;
@@ -75,7 +75,7 @@ class StreamReadOperation extends StreamOperationResult implements Runnable {
 			
 			if (this.isMarkedToStop() == false && Thread.currentThread().isInterrupted() == false) {
 				
-				m_FirstByte = this.getStream().read();
+				m_FirstByte = this.stream().read();
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();

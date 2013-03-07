@@ -1,4 +1,4 @@
-package com.theeste.andnet.IO;
+package com.theeste.andnet.System.IO;
 
 public enum FileMode {
 	CreateNew,

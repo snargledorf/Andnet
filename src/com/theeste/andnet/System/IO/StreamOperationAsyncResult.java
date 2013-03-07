@@ -1,25 +1,25 @@
-package com.theeste.andnet.IO;
+package com.theeste.andnet.System.IO;
 
-abstract class StreamOperationResult implements IAsyncStreamOperationResult, Runnable {
+import com.theeste.andnet.System.IAsyncResult;
+
+
+abstract class StreamOperationAsyncResult implements IAsyncResult, Runnable {
 
 	private Stream m_Stream;
-	private Object m_State;
 	private boolean m_ShouldStop = false;
 	private Thread m_RunningThread;
 		
-	@Override
-	public Stream getStream() {
-		// TODO Auto-generated method stub
+	public Stream stream() {
 		return m_Stream;
 	}
-	
+
+	private Object m_State;
 	@Override
-	public Object getState() {
-		// TODO Auto-generated method stub
+	public Object asyncState() {
 		return m_State;
 	}
 	
-	StreamOperationResult(Stream stream, Object state) {
+	public StreamOperationAsyncResult(Stream stream, Object state) {
 		m_Stream = stream;
 		m_State = state;
 	}	

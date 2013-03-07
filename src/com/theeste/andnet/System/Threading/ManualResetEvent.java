@@ -1,6 +1,6 @@
 // Source: http://stackoverflow.com/a/2055584
 
-package com.theeste.andnet.Threading;
+package com.theeste.andnet.System.Threading;
 
 public class ManualResetEvent {
 
