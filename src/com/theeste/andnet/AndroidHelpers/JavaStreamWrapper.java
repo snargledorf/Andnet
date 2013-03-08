@@ -6,7 +6,7 @@ import java.io.OutputStream;
 
 import com.theeste.andnet.System.IO.Stream;
 
-public abstract class JavaStreamWrapper extends Stream {	
+public class JavaStreamWrapper extends Stream {	
 	
 	private InputStream m_InputStream = null;
 	private OutputStream m_OutputStream = null;	
