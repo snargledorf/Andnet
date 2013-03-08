@@ -124,7 +124,7 @@ public class MemoryStream extends Stream {
 		m_BackingBuffer = null;
 	}
 	
-	public byte[] array() {
+	public byte[] toArray() {
 		return m_BackingBuffer.array();
 	}
 
