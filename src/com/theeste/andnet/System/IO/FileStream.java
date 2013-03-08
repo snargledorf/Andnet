@@ -15,6 +15,34 @@ public class FileStream extends Stream {
 	public FileStream(java.io.File file, FileAccess access) throws FileNotFoundException {
 		m_Stream = new JavaStreamWrapper(new FileInputStream(file), new FileOutputStream(file));
 		this.m_FileAccess = access;
+	}	
+
+	@Override
+	public int readByte() throws IOException, UnsupportedOperationException {
+		return m_Stream.readByte();
+	}
+
+	@Override
+	public int read(byte[] buffer, int offset, int length) throws IOException,
+			UnsupportedOperationException {
+		return m_Stream.read(buffer, offset, length);
+	}
+
+	@Override
+	public void writeByte(int oneByte) throws IOException,
+			UnsupportedOperationException {
+		m_Stream.writeByte(oneByte);
+	}
+
+	@Override
+	public void write(byte[] buffer, int offset, int count) throws IOException,
+			UnsupportedOperationException {
+		m_Stream.write(buffer, offset, count);
+	}
+
+	@Override
+	public void close() {
+		m_Stream.close();
 	}
 
 	@Override

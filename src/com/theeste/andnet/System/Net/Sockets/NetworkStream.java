@@ -13,6 +13,34 @@ public class NetworkStream extends Stream {
 	public NetworkStream(Socket socket) throws IOException {
 		m_Stream = new JavaStreamWrapper(socket.getInputStream(), socket.getOutputStream());
 	}
+	
+	@Override
+	public int readByte() throws IOException, UnsupportedOperationException {
+		return m_Stream.readByte();
+	}
+
+	@Override
+	public int read(byte[] buffer, int offset, int length) throws IOException,
+			UnsupportedOperationException {
+		return m_Stream.read(buffer, offset, length);
+	}
+
+	@Override
+	public void writeByte(int oneByte) throws IOException,
+			UnsupportedOperationException {
+		m_Stream.writeByte(oneByte);
+	}
+
+	@Override
+	public void write(byte[] buffer, int offset, int count) throws IOException,
+			UnsupportedOperationException {
+		m_Stream.write(buffer, offset, count);
+	}
+
+	@Override
+	public void close() {
+		m_Stream.close();
+	}
 
 	@Override
 	public void flush() throws IOException {
