@@ -10,6 +10,10 @@ public final class File {
 		throw new AssertionError();
 	}
 	
+	public static StreamWriter createText(String path) throws FileNotFoundException, IOException {
+		return new StreamWriter(File.open(path, FileMode.Create, FileAccess.Write));
+	}
+	
 	public static FileStream openRead(String path) throws IOException, FileNotFoundException {
 		return File.open(path, FileMode.Open, FileAccess.Read);
 	}
