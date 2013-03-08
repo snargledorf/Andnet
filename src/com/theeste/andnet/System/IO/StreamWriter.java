@@ -28,8 +28,7 @@ public class StreamWriter extends TextWriter {
 
 	@Override
 	public void write(char value) throws Exception {
-		super.write(value);
-		
 		m_Stream.writeByte(value);
+		super.write(value); // Performs a flush if autoFlush is true
 	}
 }
