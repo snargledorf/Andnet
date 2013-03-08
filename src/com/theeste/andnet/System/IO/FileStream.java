@@ -4,7 +4,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
-public class FileStream extends StreamWrapper {
+import com.theeste.andnet.AndroidHelpers.JavaStreamWrapper;
+
+public class FileStream extends JavaStreamWrapper {
 
 	private FileAccess m_FileAccess;
 	

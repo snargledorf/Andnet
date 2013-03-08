@@ -1,27 +1,29 @@
-package com.theeste.andnet.System.IO;
+package com.theeste.andnet.AndroidHelpers;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class StreamWrapper extends Stream {	
+import com.theeste.andnet.System.IO.Stream;
+
+public abstract class JavaStreamWrapper extends Stream {	
 	
 	private InputStream m_InputStream = null;
 	private OutputStream m_OutputStream = null;	
 	
-	public StreamWrapper() {
+	public JavaStreamWrapper() {
 		this(null, null);
 	}
 	
-	public StreamWrapper(InputStream inputStream) {
+	public JavaStreamWrapper(InputStream inputStream) {
 		this(inputStream, null);
 	}
 	
-	public StreamWrapper(OutputStream outputStream) {
+	public JavaStreamWrapper(OutputStream outputStream) {
 		this(null, outputStream);
 	}
 	
-	public StreamWrapper(InputStream inputStream, OutputStream outputStream) {	
+	public JavaStreamWrapper(InputStream inputStream, OutputStream outputStream) {	
 		super();
 		m_InputStream = inputStream;
 		m_OutputStream = outputStream;
@@ -44,19 +46,11 @@ public class StreamWrapper extends Stream {
 	}
 
 	@Override
-	public int read() throws IOException {
+	public int readByte() throws IOException {
 		
-		super.read();
+		super.readByte();
 		
 		return m_InputStream.read();
-	}
-
-	@Override
-	public int read(byte[] buffer) throws UnsupportedOperationException, IOException {
-		
-		super.read(buffer);
-		
-		return m_InputStream.read(buffer);
 	}
 
 	@Override
@@ -64,23 +58,20 @@ public class StreamWrapper extends Stream {
 		
 		super.read(buffer, offset, length);
 		
-		return m_InputStream.read(buffer, offset, length);
+		int readCount = m_InputStream.read(buffer, offset, length);
+		
+		if (readCount > 0)
+			return readCount;
+		else
+			return 0;
 	}
 
 	@Override
-	public void write(int oneByte) throws IOException {
+	public void writeByte(int oneByte) throws IOException {
 		
-		super.write(oneByte);
+		super.writeByte(oneByte);
 		
 		m_OutputStream.write(oneByte);
-	}
-
-	@Override
-	public void write(byte[] buffer) throws UnsupportedOperationException, IOException {
-		
-		super.write(buffer);
-		
-		m_OutputStream.write(buffer);
 	}
 
 	@Override

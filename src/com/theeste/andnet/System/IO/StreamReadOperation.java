@@ -75,7 +75,7 @@ class StreamReadOperation extends StreamOperationAsyncResult {
 			
 			if (this.isMarkedToStop() == false && Thread.currentThread().isInterrupted() == false) {
 				
-				m_FirstByte = this.stream().read();
+				m_FirstByte = this.stream().readByte();
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();

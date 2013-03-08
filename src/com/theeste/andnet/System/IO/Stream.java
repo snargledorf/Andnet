@@ -19,15 +19,7 @@ public abstract class Stream {
 		m_OperationExecutor = Executors.newCachedThreadPool();
 	}
 	
-	public int read() throws IOException, UnsupportedOperationException {
-		if (this.canRead() == false) {
-			throw new UnsupportedOperationException();
-		}
-		
-		return -1;
-	}
-	
-	public int read(byte[] buffer) throws IOException, UnsupportedOperationException {
+	public int readByte() throws IOException, UnsupportedOperationException {
 		if (this.canRead() == false) {
 			throw new UnsupportedOperationException();
 		}
@@ -43,13 +35,7 @@ public abstract class Stream {
 		return -1;
 	}
 	
-	public void write(int oneByte) throws IOException, UnsupportedOperationException  {
-		if (this.canWrite() == false) {
-			throw new UnsupportedOperationException();
-		}
-	}
-	
-	public void write(byte[] buffer) throws IOException, UnsupportedOperationException  {
+	public void writeByte(int oneByte) throws IOException, UnsupportedOperationException  {
 		if (this.canWrite() == false) {
 			throw new UnsupportedOperationException();
 		}
@@ -144,6 +130,18 @@ public abstract class Stream {
 			}			
 		} else {
 			throw new InvalidAsyncStreamOperationResult("This provided IStreamOperationResult is invalid");
+		}
+	}
+	
+	public void CopyTo(Stream destination) throws UnsupportedOperationException, IOException {
+		this.CopyTo(destination, 4096);
+	}
+	
+	public void CopyTo(Stream destination, int bufferSize) throws UnsupportedOperationException, IOException {
+		int count = 0;
+		byte[] buffer = new byte[bufferSize];
+		while ((count = this.read(buffer, 0, bufferSize)) > 0) {
+			destination.write(buffer, 0, count);
 		}
 	}
 }

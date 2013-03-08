@@ -30,6 +30,6 @@ public class StreamWriter extends TextWriter {
 	public void write(char value) throws Exception {
 		super.write(value);
 		
-		m_Stream.write(value);
+		m_Stream.writeByte(value);
 	}
 }

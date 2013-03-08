@@ -11,7 +11,11 @@ public final class File {
 	}
 	
 	public static StreamWriter createText(String path) throws FileNotFoundException, IOException {
-		return new StreamWriter(File.open(path, FileMode.Create, FileAccess.Write));
+		return new StreamWriter(path);
+	}
+	
+	public static StreamReader openText(String path) throws FileNotFoundException, IOException {
+		return new StreamReader(path);
 	}
 	
 	public static FileStream openRead(String path) throws IOException, FileNotFoundException {
@@ -75,7 +79,7 @@ public final class File {
 		
 		int byteCount = 0;
 		byte[] buffer = new byte[1024];
-		while ((byteCount = sourceFileStream.read(buffer )) > 0) {
+		while ((byteCount = sourceFileStream.read(buffer, 0, buffer.length)) > 0) {
 			destFileStream.write(buffer, 0, byteCount);
 		}
 		
@@ -104,7 +108,7 @@ public final class File {
 		
 		int byteCount = 0;
 		byte[] buffer = new byte[1024];
-		while ((byteCount = fs.read(buffer)) > 0) {
+		while ((byteCount = fs.read(buffer, 0, buffer.length)) > 0) {
 			ms.write(buffer, 0, byteCount);
 		}
 
@@ -151,7 +155,7 @@ public final class File {
 	public static void writeAllBytes(String path, byte[] bytes) throws FileNotFoundException, IOException {
 		FileStream fs = File.open(path, FileMode.Create, FileAccess.Write);
 		
-		fs.write(bytes);
+		fs.write(bytes, 0, bytes.length);
 		
 		fs.close();
 	}

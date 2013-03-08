@@ -52,19 +52,11 @@ public class MemoryStream extends Stream {
 	}
 	
 	@Override
-	public int read() throws IOException {		
+	public int readByte() throws IOException {		
 		
-		super.read();
+		super.readByte();
 		
 		return (m_BackingBuffer.get() & 0xff);
-	}
-
-	@Override
-	public int read(byte[] buffer) throws IOException {
-		
-		super.read(buffer);
-		
-		return this.read(buffer, 0, buffer.length);
 	}
 
 	@Override
@@ -75,7 +67,7 @@ public class MemoryStream extends Stream {
 		int bytesRead = 0;
 		if (m_BackingBuffer.remaining() > 0) {
 			for (int bs = m_BackingBuffer.capacity(); bytesRead < length && bytesRead < bs; bytesRead++) {			
-				buffer[bytesRead + offset] = (byte) this.read();
+				buffer[bytesRead + offset] = (byte) this.readByte();
 			}
 		}
 		
@@ -83,21 +75,13 @@ public class MemoryStream extends Stream {
 	}
 
 	@Override
-	public void write(int oneByte) throws IOException {
+	public void writeByte(int oneByte) throws IOException {
 		
-		super.write(oneByte);
+		super.writeByte(oneByte);
 		
 		if (m_BackingBuffer.remaining() == 0)
 			this.resizeBackingBuffer(1);
 		m_BackingBuffer.put((byte) oneByte);
-	}
-
-	@Override
-	public void write(byte[] buffer) throws IOException {
-		
-		super.write(buffer);
-		
-		this.write(buffer, 0, buffer.length);
 	}
 
 	@Override
