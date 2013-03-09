@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 import com.theeste.andnet.AndroidHelpers.JavaStreamWrapper;
+import com.theeste.andnet.System.IO.SeekOrigin;
 import com.theeste.andnet.System.IO.Stream;
 
 public class NetworkStream extends Stream {
@@ -32,8 +33,7 @@ public class NetworkStream extends Stream {
 	}
 
 	@Override
-	public void write(byte[] buffer, int offset, int count) throws IOException,
-			UnsupportedOperationException {
+	public void write(byte[] buffer, int offset, int count) throws IOException {
 		m_Stream.write(buffer, offset, count);
 	}
 
@@ -45,11 +45,6 @@ public class NetworkStream extends Stream {
 	@Override
 	public void flush() throws IOException {
 		m_Stream.flush();
-	}
-
-	@Override
-	public int available() throws IOException {
-		return m_Stream.available();
 	}
 
 	@Override
@@ -66,4 +61,33 @@ public class NetworkStream extends Stream {
 	public boolean canWrite() {
 		return m_Stream.canWrite();
 	}	
+	
+	public boolean dataAvailable() throws IOException {
+		return m_Stream.getInputStream().available() > 0;
+	}
+
+	@Override
+	public long length() {
+		return m_Stream.length();
+	}
+
+	@Override
+	public long position() {
+		return m_Stream.position();
+	}
+
+	@Override
+	public void seek(long offset, SeekOrigin origin) throws IOException {
+		m_Stream.seek(offset, origin);
+	}
+
+	@Override
+	public void position(long newPosition) throws IOException {
+		m_Stream.position(newPosition);
+	}
+
+	@Override
+	public void setLength(long value) throws IOException {
+		m_Stream.setLength(value);
+	}
 }

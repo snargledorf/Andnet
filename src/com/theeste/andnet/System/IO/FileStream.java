@@ -1,43 +1,94 @@
 package com.theeste.andnet.System.IO;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 
 import com.theeste.andnet.AndroidHelpers.JavaStreamWrapper;
 
 public class FileStream extends Stream {
 	
-	private JavaStreamWrapper m_Stream;
 	private FileAccess m_FileAccess;
+	private FileMode m_FileMode;
+	private FileChannel m_FileOutputChannel;
+	private FileChannel m_FileInputChannel;
 	
-	public FileStream(java.io.File file, FileAccess access) throws FileNotFoundException {
-		m_Stream = new JavaStreamWrapper(new FileInputStream(file), new FileOutputStream(file));
-		this.m_FileAccess = access;
-	}	
+	private long m_CurrentPosition = 0;
+	
+	private JavaStreamWrapper m_Stream;
+	
+	public FileStream(String path, FileMode mode, FileAccess access) throws IOException {		
+		
+		java.io.File file = new java.io.File(path);
+		
+		m_Stream = new JavaStreamWrapper();		
+		m_FileAccess = access;
+		m_FileMode = mode;
+		
+		if (m_FileMode == FileMode.CreateNew && file.exists()) {
+			throw new IOException("File already exists");
+		} else {
 
-	@Override
-	public int readByte() throws IOException, UnsupportedOperationException {
-		return m_Stream.readByte();
+			m_CurrentPosition = 0;
+			
+			if (m_FileAccess == FileAccess.Write || m_FileAccess == FileAccess.ReadWrite) {
+				if (m_FileAccess == FileAccess.Write) {
+					if (m_FileMode == FileMode.Append) {
+						m_Stream.setOutputStream(new FileOutputStream(file, true));
+						m_FileOutputChannel = ((FileOutputStream)m_Stream.getOutputStream()).getChannel();
+						m_CurrentPosition = m_FileOutputChannel.position();
+					}
+				}
+				
+				if (m_FileMode == FileMode.Truncate) {
+					m_Stream.setOutputStream(new FileOutputStream(file, false));
+				} else if (m_FileMode != FileMode.Append) {
+					m_Stream.setOutputStream(new FileOutputStream(file));
+					m_FileOutputChannel = ((FileOutputStream)m_Stream.getOutputStream()).getChannel();
+				}
+			}
+				
+			if (m_FileAccess == FileAccess.Read || m_FileAccess == FileAccess.ReadWrite) {
+				if (m_FileMode != FileMode.Append) {
+					m_Stream.setInputStream(new FileInputStream(file));
+					m_FileInputChannel = ((FileInputStream)m_Stream.getInputStream()).getChannel();
+				}
+			}
+		}
 	}
 
 	@Override
-	public int read(byte[] buffer, int offset, int length) throws IOException,
-			UnsupportedOperationException {
-		return m_Stream.read(buffer, offset, length);
+	public int readByte() throws IOException {
+		
+		if (m_FileMode == FileMode.Truncate)
+			throw new IllegalArgumentException();
+		
+		int byteRead = m_Stream.readByte();
+		
+		if (byteRead > 0)
+			this.seek(1, SeekOrigin.Current);
+		
+		return byteRead;
 	}
 
 	@Override
-	public void writeByte(int oneByte) throws IOException,
-			UnsupportedOperationException {
+	public int read(byte[] buffer, int offset, int length) throws IOException {
+		int byteCount = m_Stream.read(buffer, offset, length);
+		this.seek(byteCount, SeekOrigin.Current);
+		return byteCount;
+	}
+
+	@Override
+	public void writeByte(int oneByte) throws IOException {
 		m_Stream.writeByte(oneByte);
+		this.seek(1, SeekOrigin.Current);
 	}
 
 	@Override
-	public void write(byte[] buffer, int offset, int count) throws IOException,
-			UnsupportedOperationException {
+	public void write(byte[] buffer, int offset, int count) throws IOException {
 		m_Stream.write(buffer, offset, count);
+		this.seek(count, SeekOrigin.Current);
 	}
 
 	@Override
@@ -63,13 +114,74 @@ public class FileStream extends Stream {
 	}
 
 	@Override
-	public int available() throws IOException {
-		return m_Stream.available();
+	public boolean canSeek() {
+		return true;
+	}
+	
+	@Override
+	public void seek(long offset, SeekOrigin origin) throws IOException {
+
+		long newPosition = 0;
+		
+		if (origin == SeekOrigin.Begin) {
+			newPosition = 0 + offset;		
+		} else if (origin == SeekOrigin.End) {
+			newPosition = (m_FileOutputChannel.size() - 1) + offset;
+		} else {
+			newPosition = m_FileOutputChannel.position() + offset;
+		}
+		
+		if (m_FileMode == FileMode.Append) {
+			if (newPosition < (m_FileOutputChannel.size() - 1)) {
+				throw new IOException("Attempt to seek to point before the end of the file when FileMode is Append");
+			}
+		}
+		
+		this.position(newPosition);
 	}
 
 	@Override
-	public boolean canSeek() {
-		return false;
-	}	
-	
+	public long length() throws IOException {
+		return m_FileOutputChannel.size();
+	}
+
+	@Override
+	public long position() {
+		return this.m_CurrentPosition;
+	}
+
+	@Override
+	public void position(long newPosition) throws IOException {
+		
+		if (newPosition >= this.length()) {
+			
+			this.seek(0, SeekOrigin.End);	
+			
+			for (long i = this.length(); i < newPosition; i++) {
+				this.writeByte(0);		
+			}
+			
+		} else {
+
+			m_CurrentPosition = newPosition;	
+			
+			m_FileOutputChannel.position(m_CurrentPosition);
+			m_FileInputChannel.position(m_CurrentPosition);
+		}
+	}
+
+	@Override
+	public void setLength(long value) throws IOException {
+		if (value > this.length()) {
+
+			long prevPos = this.position(); // Get the current position so we can return to it after the resize
+			
+			this.position(value - 1); // This will expand the file
+			
+			this.position(prevPos); // This brings us back to our last position
+		} else {
+			m_FileOutputChannel.truncate(value);
+			m_FileInputChannel.truncate(value);
+		}
+	}
 }

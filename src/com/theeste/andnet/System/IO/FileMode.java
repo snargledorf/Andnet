@@ -4,5 +4,7 @@ public enum FileMode {
 	CreateNew,
 	Create,
 	Open,
-	OpenOrCreate
+	OpenOrCreate,
+	Truncate,
+	Append
 }

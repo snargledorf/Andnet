@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.theeste.andnet.System.IO.SeekOrigin;
 import com.theeste.andnet.System.IO.Stream;
 
 public class JavaStreamWrapper extends Stream {	
@@ -47,17 +48,17 @@ public class JavaStreamWrapper extends Stream {
 
 	@Override
 	public int readByte() throws IOException {
-		
-		super.readByte();
-		
+		if (this.canRead() == false)	{
+			throw new UnsupportedOperationException();
+		}
 		return m_InputStream.read();
 	}
 
 	@Override
 	public int read(byte[] buffer, int offset, int length) throws UnsupportedOperationException, IOException {
-		
-		super.read(buffer, offset, length);
-		
+		if (this.canRead() == false)	{
+			throw new UnsupportedOperationException();
+		}
 		int readCount = m_InputStream.read(buffer, offset, length);
 		
 		if (readCount > 0)
@@ -68,23 +69,18 @@ public class JavaStreamWrapper extends Stream {
 
 	@Override
 	public void writeByte(int oneByte) throws IOException {
-		
-		super.writeByte(oneByte);
-		
+		if (this.canWrite() == false)	{
+			throw new UnsupportedOperationException();
+		}
 		m_OutputStream.write(oneByte);
 	}
 
 	@Override
 	public void write(byte[] buffer, int offset, int count) throws UnsupportedOperationException, IOException {
-		
-		super.write(buffer, offset, count);
-		
+		if (this.canWrite() == false)	{
+			throw new UnsupportedOperationException();
+		}	
 		m_OutputStream.write(buffer, offset, count);
-	}
-
-	@Override
-	public int available() throws IOException {
-		return m_InputStream.available();
 	}
 
 	@Override
@@ -130,6 +126,32 @@ public class JavaStreamWrapper extends Stream {
 
 	@Override
 	public void flush() throws IOException {
-		m_OutputStream.flush();
+		if (m_OutputStream != null)
+			m_OutputStream.flush();
+	}
+
+	@Override
+	public long length() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public long position() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void seek(long offset, SeekOrigin origin) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void position(long newPosition) throws IOException {
+		throw new UnsupportedOperationException();		
+	}
+
+	@Override
+	public void setLength(long value) throws IOException {
+		throw new UnsupportedOperationException();	
 	}
 }

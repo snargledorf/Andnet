@@ -3,20 +3,30 @@ package com.theeste.andnet.System.IO;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.CharBuffer;
+
 public class StreamReader extends TextReader {
 	
 	private Stream m_Stream;
 	public Stream baseStream() {
 		return m_Stream;
 	}
-	
-	public boolean endOfStream() {
-		try {
-			return m_Stream.available() == 0;
-		} catch (IOException ex) {
-			ex.printStackTrace();
+
+	private final CharBuffer m_Buffer = CharBuffer.allocate(4096);
+		
+	public boolean endOfStream() throws Exception {
+		if (m_Stream == null)
+			throw new Exception("StreamReader has been closed");
+		if (m_Buffer.remaining() > 0) {
+			return false;
 		}
-		return true;
+		
+		int count = 0;
+		try {
+			count = this.readInBuffer();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return count == 0;
 	}
 	
 	public StreamReader(Stream stream) {
@@ -29,43 +39,63 @@ public class StreamReader extends TextReader {
 
 	@Override
 	public int read() throws UnsupportedOperationException, IOException {
-		return m_Stream.readByte();
+
+		this.readInBuffer();
+		
+		return m_Buffer.get();
 	}
 
 	@Override
 	public int read(char[] buffer, int index, int count) throws Exception {
+		
 		int totalCount = 0;
 		
-		byte[] temp = new byte[count];
+		this.readInBuffer();
 		
-		totalCount = m_Stream.read(temp, 0, temp.length);
-		
-		CharBuffer.wrap(buffer, index, count).put(new String(temp, 0, totalCount));
+		m_Buffer.get(buffer, index, count);
 		
 		return totalCount;
+	}
+	
+	private int readInBuffer() throws IOException {
+				
+		char[] previous = new char[m_Buffer.remaining()];
+		
+		m_Buffer.get(previous);
+		
+		m_Buffer.clear();
+		
+		m_Buffer.put(previous);		
+
+		byte[] buffer = new byte[m_Buffer.remaining()];
+		
+		int byteCount = m_Stream.read(buffer, 0, buffer.length);
+		
+		if (byteCount > 0) {
+			m_Buffer.put(new String(buffer, 0, byteCount));
+		}
+		
+		m_Buffer.limit(previous.length + byteCount);
+		
+		m_Buffer.rewind();
+		
+		return byteCount;
 	}
 
 	@Override
 	public void close() {
-		m_Stream.close();
+		if (m_Stream != null) {
+			m_Stream.close();
+			m_Stream = null;
+		}
 	}
 
 	@Override
 	public int peek() {
 
-		if (m_Stream.canSeek()) {
-		
-			try {
-				if (m_Stream.available() > 0) {
-
-					int lastPosition = m_Stream.position();
-					int nextByte = m_Stream.readByte();
-					m_Stream.seek(lastPosition);
-					return nextByte;
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}			
+		if (m_Buffer.hasRemaining()) {
+			
+			return m_Buffer.get(m_Buffer.position() - 1);
 		}
 		
 		return -1;

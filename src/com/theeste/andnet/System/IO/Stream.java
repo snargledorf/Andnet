@@ -7,65 +7,26 @@ import java.util.concurrent.Executors;
 import com.theeste.andnet.System.IAsyncResult;
 
 public abstract class Stream {
-	
-	public enum SeekOrigin {
-		Beginning,
-		Current
-	}
-	
+		
 	private static ExecutorService m_OperationExecutor;
 	
 	static {
 		m_OperationExecutor = Executors.newCachedThreadPool();
 	}
 	
-	public int readByte() throws IOException, UnsupportedOperationException {
-		if (this.canRead() == false) {
-			throw new UnsupportedOperationException();
-		}
-		
-		return -1;
-	}
-	
-	public int read(byte[] buffer, int offset, int length) throws IOException, UnsupportedOperationException {
-		if (this.canRead() == false) {
-			throw new UnsupportedOperationException();
-		}
-		
-		return -1;
-	}
-	
-	public void writeByte(int oneByte) throws IOException, UnsupportedOperationException  {
-		if (this.canWrite() == false) {
-			throw new UnsupportedOperationException();
-		}
-	}
-	
-	public void write(byte[] buffer, int offset, int count) throws IOException, UnsupportedOperationException  {
-		if (this.canWrite() == false) {
-			throw new UnsupportedOperationException();
-		}
-	}
-	
-	public int position() throws UnsupportedOperationException {
-		if (this.canSeek() == false) {
-			throw new UnsupportedOperationException();
-		}
-		
-		return -1;
-	}
-	
-	public void seek(int newPosition) throws UnsupportedOperationException {
-		if (this.canSeek() == false) {
-			throw new UnsupportedOperationException();
-		}
-	}
-	
-	public abstract void flush() throws IOException;	
-	public abstract int available() throws IOException;
+	public abstract int readByte() throws IOException;	
+	public abstract int read(byte[] buffer, int offset, int length) throws IOException;	
+	public abstract void writeByte(int oneByte) throws IOException;	
+	public abstract void write(byte[] buffer, int offset, int count) throws IOException;	
+	public abstract long position();
+	public abstract void position(long newPosition) throws IOException;
+	public abstract void seek(long offset, SeekOrigin origin) throws IOException;	
+	public abstract void setLength(long value) throws IOException;
+	public abstract void flush() throws IOException;
 	public abstract boolean canSeek();
 	public abstract boolean canRead();
 	public abstract boolean canWrite();
+	public abstract long length() throws Exception;
 	
 	public void close() {
 		try {
