@@ -133,13 +133,13 @@ public class FileStream extends Stream {
 		if (origin == SeekOrigin.Begin) {
 			newPosition = 0 + offset;		
 		} else if (origin == SeekOrigin.End) {
-			newPosition = (m_FileOutputChannel.size() - 1) + offset;
+			newPosition = this.length() + offset;
 		} else {
-			newPosition = m_FileOutputChannel.position() + offset;
+			newPosition = this.position() + offset;
 		}
 		
 		if (m_FileMode == FileMode.Append) {
-			if (newPosition < (m_FileOutputChannel.size() - 1)) {
+			if (newPosition < (this.length() - 1)) {
 				throw new IOException("Attempt to seek to point before the end of the file when FileMode is Append");
 			}
 		}
@@ -149,7 +149,12 @@ public class FileStream extends Stream {
 
 	@Override
 	public long length() throws IOException {
-		return m_FileOutputChannel.size();
+		if (m_FileOutputChannel != null)
+			return m_FileOutputChannel.size();
+		if (m_FileInputChannel != null)
+			return m_FileInputChannel.size();
+		
+		return 0;
 	}
 
 	@Override
@@ -160,7 +165,7 @@ public class FileStream extends Stream {
 	@Override
 	public void position(long newPosition) throws IOException {
 		
-		if (newPosition >= this.length()) {
+		if (newPosition > this.length()) {
 			
 			this.seek(0, SeekOrigin.End);	
 			
@@ -172,8 +177,10 @@ public class FileStream extends Stream {
 
 			m_CurrentPosition = newPosition;	
 			
-			m_FileOutputChannel.position(m_CurrentPosition);
-			m_FileInputChannel.position(m_CurrentPosition);
+			if (m_FileOutputChannel != null)
+				m_FileOutputChannel.position(m_CurrentPosition);
+			if (m_FileInputChannel != null)
+				m_FileInputChannel.position(m_CurrentPosition);
 		}
 	}
 
@@ -187,8 +194,11 @@ public class FileStream extends Stream {
 			
 			this.position(prevPos); // This brings us back to our last position
 		} else {
-			m_FileOutputChannel.truncate(value);
-			m_FileInputChannel.truncate(value);
+
+			if (m_FileOutputChannel != null)
+				m_FileOutputChannel.truncate(value);
+			if (m_FileInputChannel != null)
+				m_FileInputChannel.truncate(value);
 		}
 	}
 	

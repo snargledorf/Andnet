@@ -34,16 +34,16 @@ public class JavaStreamWrapper extends Stream {
 		return m_InputStream;
 	}
 
-	public void setInputStream(InputStream m_InputStream) {
-		this.m_InputStream = m_InputStream;
+	public void setInputStream(InputStream inputStream) {
+		this.m_InputStream = inputStream;
 	}
 
 	public OutputStream getOutputStream() {
 		return m_OutputStream;
 	}
 
-	public void setOutputStream(OutputStream m_OutputStream) {
-		this.m_OutputStream = m_OutputStream;
+	public void setOutputStream(OutputStream outputStream) {
+		this.m_OutputStream = outputStream;
 	}
 
 	@Override

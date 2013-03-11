@@ -31,6 +31,7 @@ public class StreamReader extends TextReader {
 	
 	public StreamReader(Stream stream) {
 		m_Stream = stream;
+		m_Buffer.limit(0); // Reset our buffer length
 	}
 	
 	public StreamReader(String path) throws FileNotFoundException, IOException {
@@ -40,9 +41,13 @@ public class StreamReader extends TextReader {
 	@Override
 	public int read() throws UnsupportedOperationException, IOException {
 
-		this.readInBuffer();
+		if (m_Buffer.remaining() == 0)
+			this.readInBuffer();
 		
-		return m_Buffer.get();
+		if (m_Buffer.hasRemaining())
+			return m_Buffer.get();
+		
+		return -1;
 	}
 
 	@Override
@@ -50,7 +55,8 @@ public class StreamReader extends TextReader {
 		
 		int totalCount = 0;
 		
-		this.readInBuffer();
+		if (m_Buffer.remaining() < count)
+			this.readInBuffer();
 		
 		m_Buffer.get(buffer, index, count);
 		
@@ -95,7 +101,7 @@ public class StreamReader extends TextReader {
 
 		if (m_Buffer.hasRemaining()) {
 			
-			return m_Buffer.get(m_Buffer.position() - 1);
+			return m_Buffer.get(m_Buffer.position());
 		}
 		
 		return -1;

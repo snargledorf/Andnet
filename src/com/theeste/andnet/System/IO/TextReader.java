@@ -41,7 +41,7 @@ public abstract class TextReader {
 			
 			readChar = this.read();
 			
-			if (readChar <= -1)
+			if (readChar <= 0)
 				return null;
 			
 			char c = (char)readChar;
