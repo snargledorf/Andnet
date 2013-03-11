@@ -2,14 +2,15 @@ package com.theeste.andnet.System.IO;
 
 import java.io.IOException;
 
-class StreamWriteOperation extends StreamOperationAsyncResult implements Runnable{
+public class StreamWriteOperation extends StreamOperationAsyncResult {
 	
 	private IAsyncWriteReceiver m_Receiver;
 	private byte[] m_BufferToWrite;
 	private int m_Offset;
 	private int m_Count;
+	private Exception m_Exception;
 	
-	StreamWriteOperation(byte[] buffer, int offset, int count, Stream stream, IAsyncWriteReceiver receiver, Object state) {
+	public StreamWriteOperation(byte[] buffer, int offset, int count, Stream stream, IAsyncWriteReceiver receiver, Object state) {
 		super(stream, state);
 		
 		m_Receiver = receiver;
@@ -17,15 +18,31 @@ class StreamWriteOperation extends StreamOperationAsyncResult implements Runnabl
 		m_Offset = offset;
 		m_Count = count;
 	}
-
-	@Override
-	public void run() {
-		super.run();
-		if (this.isMarkedToStop() == false && m_Receiver != null)
+	
+	void write() throws UnsupportedOperationException, IOException {
+		
+		this.stream().write(m_BufferToWrite, m_Offset, m_Count);
+		
+		this.asyncWaitHandle().set();
+		
+		if (m_Receiver != null)
 			m_Receiver.endWrite(this);
 	}
 	
-	void write() throws UnsupportedOperationException, IOException {
-		this.stream().write(m_BufferToWrite, m_Offset, m_Count);
+	void endWrite() throws Exception {
+		
+		this.asyncWaitHandle().waitOne();
+		
+		if (m_Exception != null)
+			throw m_Exception;
+	}
+
+	@Override
+	public void run() {
+		try {
+			this.write();
+		} catch (Exception e) {
+			this.m_Exception = e;
+		}
 	}
 }

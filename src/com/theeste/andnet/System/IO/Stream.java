@@ -1,18 +1,10 @@
 package com.theeste.andnet.System.IO;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.theeste.andnet.System.IAsyncResult;
 
 public abstract class Stream {
-		
-	private static ExecutorService m_OperationExecutor;
-	
-	static {
-		m_OperationExecutor = Executors.newCachedThreadPool();
-	}
 	
 	public abstract int readByte() throws IOException;	
 	public abstract int read(byte[] buffer, int offset, int length) throws IOException;	
@@ -26,7 +18,32 @@ public abstract class Stream {
 	public abstract boolean canSeek();
 	public abstract boolean canRead();
 	public abstract boolean canWrite();
+	public boolean canTimeout() { return false; }
 	public abstract long length() throws Exception;
+
+	private int m_ReadTimeout = 0;
+	public int readTimeout() {
+		if (this.canTimeout() == false)
+			throw new UnsupportedOperationException();
+		return m_ReadTimeout;
+	}
+	public void setReadTimeout(int timeout) {
+		if (this.canTimeout() == false)
+			throw new UnsupportedOperationException();
+		this.m_ReadTimeout = timeout;
+	}
+
+	private int m_WriteTimeout = 0;
+	public int writeTimeout() {
+		if (this.canTimeout() == false)
+			throw new UnsupportedOperationException();
+		return m_WriteTimeout;
+	}
+	public void setWriteTimeout(int timeout) {
+		if (this.canTimeout() == false)
+			throw new UnsupportedOperationException();
+		this.m_WriteTimeout = timeout;
+	}
 	
 	public void close() {
 		try {
@@ -36,11 +53,11 @@ public abstract class Stream {
 		}
 	}
 	
-	public IAsyncResult beginRead(byte[] buffer, int offset, int count, IAsyncReadReceiver receiver, Object state) throws UnsupportedOperationException {
+	public IAsyncResult beginRead(byte[] buffer, int offset, int count, IAsyncReadReceiver receiver, Object state) throws UnsupportedOperationException, IOException, InterruptedException {
 		if (this.canRead()) {
 			StreamReadOperation readOp = new StreamReadOperation(buffer, offset, count, this, receiver, state);
-					
-			m_OperationExecutor.submit(readOp);
+			
+			readOp.read();
 			
 			return readOp;
 		} else {
@@ -48,7 +65,7 @@ public abstract class Stream {
 		}
 	}
 	
-	public int endRead(IAsyncResult result) throws InvalidAsyncStreamOperationResult, WrongStreamException, IOException, InterruptedException {
+	public int endRead(IAsyncResult result) throws Exception {
 		
 		StreamReadOperation op = StreamReadOperation.class.cast(result);
 		
@@ -56,7 +73,7 @@ public abstract class Stream {
 			
 			if (op.stream() == this) {
 				
-				return op.read();	
+				return op.endRead();
 
 			} else {
 				throw new WrongStreamException("Operation result not for this stream");
@@ -69,23 +86,19 @@ public abstract class Stream {
 	public IAsyncResult beginWrite(byte[] buffer, int offset, int count, IAsyncWriteReceiver receiver, Object state) throws UnsupportedOperationException, IOException {
 		StreamWriteOperation writeOp = new StreamWriteOperation(buffer, offset, count, this, receiver, state);
 
-		m_OperationExecutor.submit(writeOp);
+		writeOp.write();
 		
 		return writeOp;
 	}
 	
-	public void endWrite(IAsyncResult result) throws UnsupportedOperationException, IOException, InvalidAsyncStreamOperationResult, WrongStreamException {
+	public void endWrite(IAsyncResult result) throws Exception {
 
 		StreamWriteOperation op = StreamWriteOperation.class.cast(result);
 		
 		if (op != null) {
 			
-			if (this == op.stream()) {	
-				
-				op.stop();
-
-				op.write();	
-				
+			if (this == op.stream()) {
+				op.endWrite();
 			} else {
 				throw new WrongStreamException("Operation result not for this stream");
 			}			

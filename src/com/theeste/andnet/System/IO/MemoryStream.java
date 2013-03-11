@@ -14,6 +14,7 @@ public class MemoryStream extends Stream {
 	
 	public MemoryStream(int capacity) {
 		m_BackingBuffer = ByteBuffer.allocate(capacity);
+		m_BackingBuffer.limit(0); // Reset our "length" back to zero
 	}
 	
 	public MemoryStream(byte[] array) {

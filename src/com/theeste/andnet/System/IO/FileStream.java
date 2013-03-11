@@ -4,8 +4,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.theeste.andnet.AndroidHelpers.JavaStreamWrapper;
+import com.theeste.andnet.System.IAsyncResult;
 
 public class FileStream extends Stream {
 	
@@ -17,6 +20,7 @@ public class FileStream extends Stream {
 	private long m_CurrentPosition = 0;
 	
 	private JavaStreamWrapper m_Stream;
+	private ExecutorService m_ThreadPool;
 	
 	public FileStream(String path, FileMode mode, FileAccess access) throws IOException {		
 		
@@ -56,6 +60,9 @@ public class FileStream extends Stream {
 				}
 			}
 		}
+		
+		// If all went well, create the thread pool for async reads and writes
+		m_ThreadPool = Executors.newCachedThreadPool();
 	}
 
 	@Override
@@ -183,5 +190,30 @@ public class FileStream extends Stream {
 			m_FileOutputChannel.truncate(value);
 			m_FileInputChannel.truncate(value);
 		}
+	}
+	
+	@Override
+	public IAsyncResult beginRead(byte[] buffer, int offset, int count,
+			IAsyncReadReceiver receiver, Object state)
+			throws UnsupportedOperationException, IOException,
+			InterruptedException {
+
+		StreamReadOperation readOp = new StreamReadOperation(buffer, offset, count, this, receiver, state);
+		
+		m_ThreadPool.submit(readOp);		
+		
+		return readOp;
+	}
+
+	@Override
+	public IAsyncResult beginWrite(byte[] buffer, int offset, int count,
+			IAsyncWriteReceiver receiver, Object state)
+			throws UnsupportedOperationException, IOException {
+		
+		StreamWriteOperation writeOp = new StreamWriteOperation(buffer, offset, count, this, receiver, state);
+		
+		m_ThreadPool.submit(writeOp);
+		
+		return writeOp;		
 	}
 }
