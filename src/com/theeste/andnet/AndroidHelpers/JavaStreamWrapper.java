@@ -49,7 +49,7 @@ public class JavaStreamWrapper extends Stream {
 	@Override
 	public int readByte() throws IOException {
 		if (this.canRead() == false)	{
-			throw new UnsupportedOperationException();
+			throw new UnsupportedOperationException("Stream not open for reading");
 		}
 		return m_InputStream.read();
 	}
@@ -57,7 +57,7 @@ public class JavaStreamWrapper extends Stream {
 	@Override
 	public int read(byte[] buffer, int offset, int length) throws UnsupportedOperationException, IOException {
 		if (this.canRead() == false)	{
-			throw new UnsupportedOperationException();
+			throw new UnsupportedOperationException("Stream not open for reading");
 		}
 		int readCount = m_InputStream.read(buffer, offset, length);
 		
@@ -70,7 +70,7 @@ public class JavaStreamWrapper extends Stream {
 	@Override
 	public void writeByte(int oneByte) throws IOException {
 		if (this.canWrite() == false)	{
-			throw new UnsupportedOperationException();
+			throw new UnsupportedOperationException("Stream not open for writing");
 		}
 		m_OutputStream.write(oneByte);
 	}
@@ -78,35 +78,9 @@ public class JavaStreamWrapper extends Stream {
 	@Override
 	public void write(byte[] buffer, int offset, int count) throws UnsupportedOperationException, IOException {
 		if (this.canWrite() == false)	{
-			throw new UnsupportedOperationException();
+			throw new UnsupportedOperationException("Stream not open for writing");
 		}	
 		m_OutputStream.write(buffer, offset, count);
-	}
-
-	@Override
-	public synchronized void close() {
-		
-		super.close();
-		
-		try {
-			if (m_InputStream != null) {
-				InputStream temp = m_InputStream;
-				m_InputStream = null;
-				temp.close();
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		
-		try {
-			if (m_OutputStream != null) {
-				OutputStream temp = m_OutputStream;
-				m_OutputStream = null;
-				temp.close();
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
 	}
 
 	@Override
@@ -153,5 +127,28 @@ public class JavaStreamWrapper extends Stream {
 	@Override
 	public void setLength(long value) throws IOException {
 		throw new UnsupportedOperationException();	
+	}
+
+	@Override
+	public void dispose() {
+		try {
+			if (m_InputStream != null) {
+				InputStream temp = m_InputStream;
+				m_InputStream = null;
+				temp.close();
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		
+		try {
+			if (m_OutputStream != null) {
+				OutputStream temp = m_OutputStream;
+				m_OutputStream = null;
+				temp.close();
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 }

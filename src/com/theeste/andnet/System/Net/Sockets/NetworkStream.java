@@ -88,18 +88,6 @@ public class NetworkStream extends Stream {
 	}
 
 	@Override
-	public void close() {
-		m_Stream.close();
-
-		try {
-			if (m_OwnsSocket && m_Socket != null)
-				m_Socket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Override
 	public boolean canTimeout() {
 		return true;
 	}
@@ -176,5 +164,17 @@ public class NetworkStream extends Stream {
 		m_ThreadPool.submit(writeOp);
 		
 		return writeOp;		
+	}
+
+	@Override
+	public void dispose() {
+		m_Stream.close();
+
+		try {
+			if (m_OwnsSocket && m_Socket != null)
+				m_Socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

@@ -180,4 +180,9 @@ public class MemoryStream extends Stream {
 						m_BackingBuffer.limit())
 						.array();
 	}
+
+	@Override
+	public void dispose() {
+		// Nothing to do here
+	}
 }
