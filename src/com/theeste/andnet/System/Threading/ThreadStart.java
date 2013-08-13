@@ -1,5 +1,5 @@
 package com.theeste.andnet.System.Threading;
 
-public interface ThreadStart extends Runnable {
-
+public interface ThreadStart {
+	void run();
 }
