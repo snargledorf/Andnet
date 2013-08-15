@@ -160,7 +160,7 @@ public abstract class TextWriter {
 	}
 	
 	public void writeLine(String format, Object... arg) throws Exception { 
-		this.write(format, arg);
+		this.write(String.format(format, arg));
 		this.write(m_NewLine);
 	}
 	
