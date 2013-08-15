@@ -120,6 +120,11 @@ public class Thread
 		m_ThreadState = ThreadState.Running;
 	}
 	
+	public static void Sleep(int milliseconds) throws InterruptedException
+	{
+		java.lang.Thread.sleep(milliseconds);
+	}
+	
 	private class ThreadStartRunnable implements Runnable
 	{
 		private ThreadStart m_ThreadStart;
